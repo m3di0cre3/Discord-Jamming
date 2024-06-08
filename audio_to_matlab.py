@@ -1,50 +1,60 @@
-import discord
-import os
-import numpy as np
+from flask import Flask, render_template
+from flask_apscheduler import APScheduler
+import pyaudio
+import numpy as nppip 
 import socket
 
-TOKEN = os.environ["DISCORD_BOT_TOKEN"]
-CHANNEL_ID = '1248828890458361866'
+audio = pyaudio.PyAudio()
+app = Flask(__name__)
+app.config["SECRET_KEY"] = "secret!"
 
-intents = discord.Intents.default()
-intents.voice_states = True
-intents.guilds = True
+do_record = False
+stream = None
+sock = None
 
-class AudioCapture(discord.Client):
-    def __init__(self, *args, **kwargs):
-        super().__init__(intents=intents, *args, **kwargs)
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.voice_client = None
-        client = discord.Client(intents = intents)
+@app.route('/beforerec')
+def beforerec():
+    return render_template('recording.html', recording=False)
 
+@app.route('/record')
+def duringrec():
+    global stream, do_record, sock
 
-    async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
-        channel = self.get_channel(int(CHANNEL_ID))
-        self.voice_client = await channel.connect()
+    stream = audio.open(format=pyaudio.paInt16, channels=1, rate=44100, input=True, frames_per_buffer=1024)
+    do_record = True
 
-    """
-    async def on_voice_state_update(self, member, before, after):
-        if after.channel and after.channel.id == int(CHANNEL_ID):
-            if self.voice_client is None or not self.voice_client.is_connected():
-                channel = self.get_channel(int(CHANNEL_ID))
-                self.voice_client = await channel.connect()
-            else:
-                self.voice_client.listen(discord.sinks.PCMAudioSink(self.process_audio))
-    """
-    @client.event
-    def process_audio(self, data):
-        # Convert data to numpy array
-        print("test")
-        audio_array = np.frombuffer(data, dtype=np.int16)
-        # Send the audio data over the socket
-        print(audio_array)
-        self.sock.sendto(audio_array.tobytes(), ("localhost", 65436))
+    # Establish socket connection to MATLAB
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.connect(('localhost', 65432))
 
-    async def on_disconnect(self):
-        await self.voice_client.disconnect()
-        self.sock.close()
+    return render_template('recording.html', recording=True, feedback="")
 
-client = AudioCapture()
-client.run(TOKEN)
+@app.route('/endrec')
+def endrec():
+    global do_record, stream, sock
+    do_record = False 
+    stream.stop_stream()
+    stream.close()
+    sock.close()
+
+    return render_template('recording.html', recording=False)
+
+@app.route('/get_feedback')
+def get_feedback():
+    global sock
+    feedback = sock.recv(1024).decode('utf-8')
+    return feedback
+def record():
+    global do_record, stream, sock
+    if do_record:
+        data = stream.read(1024)
+        sock.sendall(data)  # Send audio data to MATLAB
+
+        new_data = np.frombuffer(data, dtype=np.int16)
+        print(new_data)
+
+if __name__ == '__main__':
+    scheduler = APScheduler()
+    scheduler.add_job(func=record, trigger="interval", id="job", seconds=1, max_instances=1)
+    scheduler.start()
+    app.run()
