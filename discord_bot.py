@@ -8,6 +8,11 @@ discord_token = str(os.getenv("DISCORD_TOKEN"))
 bot = discord.Bot()
 connections = {}
 
+@bot.event
+async def on_ready():
+    print("Bot Is Working and Online!")
+    print('--------------------------')
+
 async def getting_audio(sink: discord.sinks, channel: discord.TextChannel, *args):
     recorded_users = [
         f"<@{user_id}>"
@@ -16,8 +21,6 @@ async def getting_audio(sink: discord.sinks, channel: discord.TextChannel, *args
     await sink.vc.disconnect()
     files = [discord.File(audio.file, f"{user_id}.{sink.encoding}") for user_id, audio in sink.audio_data.items()]
     await channel.send(f"finished recording audio for: {', '.join(recorded_users)}.", files=files)
-
-
 
 @bot.command()
 async def start_recording_vc(ctx):
