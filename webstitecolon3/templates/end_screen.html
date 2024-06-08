@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}END SCREEN{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <main>
+        {% block content %}{% endblock %}
+        <h1>CONGRATS!!!</h1>
+        <audio id="audio" autoplay>
+            <source src="{{ url_for('static', filename='audio/clap.mp3') }}" type="audio/mpeg">
+        </audio>
+        <ul>
+            <a href="/">Home</a>
+        </ul>
+    </main>
+</body>
+</html>

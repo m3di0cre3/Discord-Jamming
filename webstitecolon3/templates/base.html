@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Flask App{% endblock %}</title>
+    <title>{% block title %}Any JAM{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script>
         function fetchData(){
@@ -18,9 +18,9 @@
 <body>
     <main>
         {% block content %}{% endblock %}
-        <h1>Discord JAM!</h1>
-        <p>:3</p>
-        <a href = '/play_menu'>Play!</a>
+        <h1>Any JAM !!</h1>
+        <p>How musical are you?</p>
+        <a href = '/choose_song'>Play!</a>
     </main>
 </body>
 </html>

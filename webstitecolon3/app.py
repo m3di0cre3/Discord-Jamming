@@ -1,23 +1,43 @@
 from flask import *
 from flask_apscheduler import APScheduler
+from flask_socketio import SocketIO,emit
+from random import choice
 import requests
+import base64
 import json
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = 'secret!'
+socketio = SocketIO(app)
 
 counter = 0
 received_data = "loading!"
 
-def get_data():
-    global counter
-    counter += 1
-    return str(counter)
+def get_music_feedback_from_music():
+    return choice(['good','great','awesome','fantastic','bad','horrible','terrible','complete trash'])
+lyrics = {0:'i',1:'wanna',2:'eat',3:'something'}
+cur_lyric_index = 0
+
+@app.route('/choose_song', methods=['GET'])
+def choose_song_menu():
+    query = request.args.get('query')
+    return render_template('choose_song.html')
+
+def get_music_feedback():
+    socketio.emit('music feedback',{'data':get_music_feedback_from_music()})
+def get_lyrics():
+    global lyrics
+    global cur_lyric_index
+    cur_lyric_index += 1
+    if cur_lyric_index == 4:
+        cur_lyric_index = 0
+    socketio.emit("lyric",{"data":lyrics[cur_lyric_index]})
+
 
 # buttons ish
 @app.route('/')
 def index():
-    counter = get_data()
-    return render_template('index.html',counter=counter)
+    return render_template('index.html')
 
 @app.route('/play_menu')
 def play_game_menu():
@@ -34,7 +54,9 @@ def guitar_game():
 @app.route('/play_menu/piano_game')
 def piano_game():
     return render_template('piano_game.html')
-
+@app.route('/play_menu/end_screen')
+def end_game():
+    return render_template('end_screen.html')
 
 
 # progress code
@@ -73,6 +95,7 @@ def get_song():
 # jfdklf
 if __name__ == '__main__':
     scheduler = APScheduler()
-    scheduler.add_job(func=get_data,trigger='interval',id='job',seconds = 1)
+    scheduler.add_job(func=get_music_feedback,trigger='interval',id='job',seconds = 1)
+    scheduler.add_job(func=get_lyrics,trigger='interval',id='job2',seconds = 1)
     scheduler.start()
     app.run(debug=True)

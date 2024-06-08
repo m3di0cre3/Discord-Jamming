@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basic Hyperlink</title>
+    <title>{% block title %}Instrument selection{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <nav>
         <ul>
-            <li><a href="/play_menu/vocal_game">Vocal Game</a></li>
-            <li><a href="/play_menu/vocal_game">Guitar Game</a></li>
-            <li><a href="/play_menu/vocal_game">Piano Game</a></li>
+            {% block content %}{% endblock %}
+            <a href="/play_menu/vocal_game">Vocal Game</a>
+            <a href="/play_menu/guitar_game">Guitar Game</a>
+            <a href="/play_menu/piano_game">Piano Game</a>
+            <a href="/choose_song">Back :-(</a>
         </ul>
     </nav>
-    <a href="/">Home</a>
+
 </body>
 </html>

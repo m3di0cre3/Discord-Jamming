@@ -3,9 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basic Hyperlink</title>
+    <title>{% block title %}AAAAAAAA{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+    <script>
+        var socket = io();
+        socket.on('connect',function(){
+            socket.emit('my_event',{data: "Connected"});
+        });
+        socket.on("music_feedback",function(msg){
+            var cur_music_feedback = msg.data
+            document.getElementById("music_feedback_received").innerHTML = cur_music_feedback
+        })
+        socket.on("lyric",function(msg){
+            var cur_lyric = msg.data
+            document.getElementById("current_lyric").innerHTML = cur_lyric
+        })
+    </script>
 </head>
 <body>
-    <a href="/play_menu">Back</a>
+    <nav>
+        <ul>
+            {% block content %}{% endblock %}
+            <a href="/play_menu/end_screen">End Game</a>
+            <a href="/play_menu">Back</a>
+        </ul>
+    </nav>
+    <p>Current Feedback: <span id= 'music_feedback_received'>Loading ...</span></p>
+    <p>Current Lyric: <span id= 'current_lyric'>Loading ...</span></p>
 </body>
 </html>

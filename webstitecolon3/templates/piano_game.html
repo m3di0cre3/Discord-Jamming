@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basic Hyperlink</title>
+    <title>{% block title %}pbpbpbpbppb{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <a href="/play_menu">Back</a>
+    <nav>
+        <ul>
+            {% block content %}{% endblock %}
+            <a href="/play_menu/end_screen">End Game</a>
+            <a href="/play_menu">Back</a>
+        </ul>
+    </nav>
 </body>
 </html>
