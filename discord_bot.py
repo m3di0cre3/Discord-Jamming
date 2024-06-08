@@ -26,7 +26,7 @@ async def start_recording_vc(ctx):
         await ctx.respond("Currently not in a VC!")
     vc = await voice.channel.connect()
     connections.update({ctx.guild.id:vc})
-    vc.startrecording(
+    vc.start_recording(
         discord.sinks.WaveSink(),
         getting_audio,
         ctx.channel
