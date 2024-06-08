@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Game - My Flask App{% endblock %}
+
+{% block content %}
+<section>
+    <!-- COOKED. -->
+    <script>
+        function fetchProgress() {
+            fetch('/get_progress')
+                .then(response => response.json())
+                .then(dataProgress => {
+                    document.getElementById('dataProgress').innerText = JSON.stringify(dataProgress, null, 2);
+                });
+        }
+
+        // time
+        setInterval(fetchProgress, 500);
+        window.onload = fetchProgress;
+
+        function fetchSong() {
+            fetch('/get_song')
+                .then(response => response.json())
+                .then(dataSong => {
+                    document.getElementById('dataSong').innerText = JSON.stringify(dataSong, null, 2);
+                });
+        }
+
+        // time
+        setInterval(fetchSong, 500);
+        window.onload = fetchSong;
+    </script>
+    <body>
+        <p>Received Data</p>
+        <pre id="dataProgress">Loading...</pre>
+        <pre id="dataSong">Loading...</pre>
+    </body>
+</section>
+{% endblock %}

@@ -5,21 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Flask App{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function fetchData(){
+            fetch('/get_data')
+            .then(response => reponse.json())
+            .then(data => {
+                document.getElementById()
+            })
+        }
+    </script>
 </head>
 <body>
-    <header>
-        <h1>Discord JAM!</h1>
-        <nav>
-            <ul>
-                <p>Current song: hbfdjksfhsjk</p>
-            </ul>
-        </nav>
-    </header>
     <main>
         {% block content %}{% endblock %}
-    </main>
-    <footer>
+        <h1>Discord JAM!</h1>
         <p>:3</p>
-    </footer>
+        <a href = '/play_menu'>Play!</a>
+    </main>
 </body>
 </html>
