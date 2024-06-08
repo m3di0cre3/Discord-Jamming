@@ -19,7 +19,7 @@ async def on_ready():
     print("Bot Is Working and Online!")
     print('--------------------------')
 
-@bot.command
+@bot.command()
 async def hello(ctx,*,user_input:str):
     await ctx.send(user_input)
 
