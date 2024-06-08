@@ -1,11 +1,17 @@
 import discord
+from discord.ext import commands
 import os
 import dotenv
 dotenv.load_dotenv()
 
 discord_token = str(os.getenv("DISCORD_TOKEN"))
 
-bot = discord.Bot()
+intents = discord.Intents.default()
+intents.voice_states = True
+intents.guilds = True
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
 connections = {}
 
 @bot.event
