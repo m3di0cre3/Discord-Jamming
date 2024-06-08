@@ -11,7 +11,7 @@ connections = {}
 async def getting_audio(sink: discord.sinks, channel: discord.TextChannel, *args):
     recorded_users = [
         f"<@{user_id}>"
-        for user_id, audio in sink.audio.get_data.items()
+        for user_id, audio in sink.audio_data.items()
     ]
     await sink.vc.disconnect()
     files = [discord.File(audio.file, f"{user_id}.{sink.encoding}") for user_id, audio in sink.audio_data.items()]
