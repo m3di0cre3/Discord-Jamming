@@ -11,9 +11,15 @@ chunkSize = 1024; % Adjust based on the data rate from the bot
 bitsPerSample = 16;
 
 % Create a UDP object
-udpReceiver = udpport("LocalPort", 65432, "LocalHost", "doetom.dhpc");
-
-receivedData = read(udpReceiver, udpReceiver.NumBytesAvailable, "uint16");
+udpReceiver = udpport("LocalPort", 65436);
+while true
+    disp(udpReceiver.NumBytesAvailable);
+    receivedData = read(udpReceiver, 1024, "uint16");
+    if ~isempty(receivedData)
+        disp(['Received message: ', char(receivedData)]);
+        break
+    end
+end
 
 % Create an audio player
 audioPlayer = audioplayer(zeros(chunkSize, channels), sampleRate);
