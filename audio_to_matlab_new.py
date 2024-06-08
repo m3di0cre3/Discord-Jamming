@@ -11,35 +11,32 @@ intents = discord.Intents.default()
 intents.voice_states = True
 intents.guilds = True
 intents.message_content = True
+
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-client = discord.Client(intents=intents)
 
+# Set up the UDP socket
 udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-udp_address = ('localhost', 12345)  
-
-
-class AudioCapture(discord.AudioSink):
-    def __init__(self, socket):
-        self.socket = socket
-        super().__init__()
-
-    def write(self, data):
-        self.socket.sendto(data.data, udp_address)
+udp_address = ('localhost', 12345)  # Replace with your server's IP and port
 
 @bot.event
 async def on_ready():
-    print(f'Logged on as {bot.user}')
+    print(f'Bot is ready. Logged in as {bot.user}')
 
 @bot.command()
 async def join(ctx):
     if ctx.author.voice:
         channel = ctx.author.voice.channel
         vc = await channel.connect()
-        vc.start_recording(AudioCapture(udp_sock), ctx.channel)
         await ctx.send(f'Joined {channel}')
+        await capture_audio(vc)
     else:
         await ctx.send('You are not connected to a voice channel.')
+
+async def capture_audio(voice_client):
+    while voice_client.is_connected():
+        data = voice_client.recv_packet()
+        udp_sock.sendto(data[1], udp_address)
 
 @bot.command()
 async def leave(ctx):
