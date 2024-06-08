@@ -14,7 +14,11 @@ class AudioCapture(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(intents=intents, *args, **kwargs)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect(('localhost', 65432))  # Change IP and port as necessary
+        self.sock.bind(("localhost", 65432))
+        self.sock.listen(1)
+        print("Waiting for connection...")
+        self.conn, _ = self.sock.accept()
+        print("Connected")  
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
