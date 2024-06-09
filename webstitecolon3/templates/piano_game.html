@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}pbpbpbpbppb{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+    <script>
+        var socket = io();
+        socket.on('connect',function(){
+            socket.emit('my_event',{data: "Connected"});
+        });
+        socket.on("music_feedback",function(msg){
+            var cur_music_feedback = msg.data
+            document.getElementById("music_feedback_received").innerHTML = cur_music_feedback
+        })
+        socket.on("piano_note",function(msg){
+            var cur_music_feedback = msg.data
+            document.getElementById("piano_note_received").innerHTML = cur_music_feedback
+        })
+    </script>
 </head>
 <body>
     <nav>
@@ -14,5 +30,9 @@
             <a href="/play_menu">Back</a>
         </ul>
     </nav>
+    <pre>
+Current Feedback: <span id= 'music_feedback_received'>Loading ...</span>
+Current Piano Note: <span id= 'piano_note_received'>Loading ...</span>
+    </pre>
 </body>
 </html>

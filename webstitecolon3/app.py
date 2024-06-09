@@ -16,7 +16,9 @@ received_data = "loading!"
 def get_music_feedback_from_music():
     return choice(['good','great','awesome','fantastic','bad','horrible','terrible','complete trash'])
 lyrics = {0:'i',1:'wanna',2:'eat',3:'something'}
+piano_notes = ['A','B','C','D','E','F','G','H','I']
 cur_lyric_index = 0
+cur_piano_index = 0
 
 @app.route('/choose_song', methods=['GET'])
 def choose_song_menu():
@@ -24,7 +26,8 @@ def choose_song_menu():
     return render_template('choose_song.html')
 
 def get_music_feedback():
-    socketio.emit('music feedback',{'data':get_music_feedback_from_music()})
+    socketio.emit("music_feedback",{"data":get_music_feedback_from_music()})
+
 def get_lyrics():
     global lyrics
     global cur_lyric_index
@@ -33,6 +36,12 @@ def get_lyrics():
         cur_lyric_index = 0
     socketio.emit("lyric",{"data":lyrics[cur_lyric_index]})
 
+def get_piano_note():
+    global piano_notes
+    global cur_piano_index
+    if cur_piano_index < len(piano_notes)-1:
+        cur_piano_index += 1
+    socketio.emit("piano_note",{"data":piano_notes[cur_piano_index]})
 
 # buttons ish
 @app.route('/')
@@ -94,8 +103,10 @@ def get_song():
 
 # jfdklf
 if __name__ == '__main__':
+    counter += 1
     scheduler = APScheduler()
     scheduler.add_job(func=get_music_feedback,trigger='interval',id='job',seconds = 1)
     scheduler.add_job(func=get_lyrics,trigger='interval',id='job2',seconds = 1)
+    scheduler.add_job(func=get_piano_note,trigger='interval',id='jo32',seconds = 1)
     scheduler.start()
     app.run(debug=True)
