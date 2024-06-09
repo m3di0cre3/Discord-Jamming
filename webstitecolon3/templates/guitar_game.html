@@ -5,13 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}brrrrr{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        html {
+            background: url('/static/images/Untitled-3.gif');
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            height: 0;
+            color: transparent;
+            background-size: cover;
+        }
+        #hi {
+            color: black
+        }
+    </style>
 </head>
 <body>
     <nav>
         <ul>
             {% block content %}{% endblock %}
-            <a href="/play_menu/end_screen">End Game</a>
-            <a href="/play_menu">Back</a>
+            <a id="hi" href="/play_menu/end_screen">End Game</a>
+            <a id="hi" href="/play_menu">Back</a>
         </ul>
     </nav>
 </body>

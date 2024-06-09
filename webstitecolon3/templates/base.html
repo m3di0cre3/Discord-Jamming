@@ -14,13 +14,18 @@
             })
         }
     </script>
+    <style>
+        #hi {
+            color: black
+        }
+    </style>
 </head>
 <body>
     <main>
         {% block content %}{% endblock %}
         <h1>Any JAM !!</h1>
         <p>How musical are you?</p>
-        <a href = '/choose_song'>Play!</a>
+        <a id="hi" href = '/choose_song'>Play!</a>
     </main>
 </body>
 </html>
