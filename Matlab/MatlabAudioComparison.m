@@ -1,133 +1,66 @@
-%{
-udpReceiver = udpport("LocalPort", 65432);
-while true
-    disp(udpReceiver.NumBytesAvailable);
-    receivedData = read(udpReceiver, 1024, "double");
-    if ~isempty(receivedData)
-        disp(['Received message: ', char(receivedData)]);
-        break
-    end
-end
-%}
 
-audioInfo = audioinfo("twinkletwinklelittlestar.mp3");
+port = 12346;
+
+t = tcpserver('0.0.0.0', port, 'ByteOrder', 'little-endian');
+
+% Display server information
+disp('Server is waiting for a connection...');
+
+audioInfo = audioinfo("cmajorscale.mp3");
 songSampleRate = audioInfo.SampleRate;
 playerSampleRate = 44100;
 songWindowWidth = 1;
 playerWindowWidth = 1;
 songWindowLeft = 10;
-playerWindowLeft = 9.8;
+playerWindowLeft = 10;
 windowShift = 0.1;
+playerAudioVector = zeros(44100, 1);
+posInPlayerAudioVector = 1;
+processedData = zeros(1470, 1);
 
 while true
     samplesNum = [round(songWindowLeft*songSampleRate+1), round((songWindowLeft+songWindowWidth)*songSampleRate)];
     samplesNum2 = [round(playerWindowLeft*playerSampleRate+1), round((playerWindowLeft+playerWindowWidth)*playerSampleRate)];
     %disp(samplesNum)
-    [stereoSong, FsSong] = audioread("twinkletwinklelittlestar.mp3", samplesNum);
+    [stereoSong, FsSong] = audioread("cmajorscale.mp3", samplesNum);
     monoSong = (stereoSong(:,1) + stereoSong(:,2))/2;
-    [stereoPlayer, FsPlayer] = audioread("twinkletwinklelittlestar.mp3", samplesNum2);
-    monoPlayer = (stereoPlayer(:,1) + stereoPlayer(:,2))/2;
-    
-    [r, lags] = xcorr(monoSong, monoPlayer);
+    while posInPlayerAudioVector < 44100
+        while t.NumBytesAvailable == 0
+        end
+        %disp(t.NumBytesAvailable)
+        newData = read(t, t.NumBytesAvailable);
+        for i = 1:1470
+            processedData(i) = typecast(uint8([newData(i*4-3), newData(i*4-2), newData(i*4-1), newData(i*4)]), "single");
+        end
+        
+        %disp(class(processedData))
+        %disp(processedData)
+        playerAudioVector(posInPlayerAudioVector:posInPlayerAudioVector+1469) = processedData;
+        posInPlayerAudioVector = posInPlayerAudioVector + 1470;
+        %disp('Data received:');
+        %disp(data);
+    end
+
+    [r, lags] = xcorr(monoSong, playerAudioVector);
     [~, I] = max(abs(r));
-    timeDiff = lags(I)/Fs;
+    timeDiff = lags(I)/FsSong;
     shiftedSongWindowLeft = songWindowLeft + timeDiff;
-    [shiftedStereoSong, FsSongShifted] = audioread("twinkletwinklelittlestar.mp3", [round(shiftedSongWindowLeft*songSampleRate+1), round((shiftedSongWindowLeft+songWindowWidth)*songSampleRate)]);
+    [shiftedStereoSong, FsSongShifted] = audioread("cmajorscale.mp3", [round(shiftedSongWindowLeft*songSampleRate+1), round((shiftedSongWindowLeft+songWindowWidth)*songSampleRate)]);
     shiftedMonoSong = (shiftedStereoSong(:,1) + shiftedStereoSong(:,2))/2;
-    amplitudeMultiple = sum(shiftedMonoSong)/sum(monoPlayer);
-    monoPlayer = amplitudeMultiple * monoPlayer;
+    amplitudeMultiple = sum(shiftedMonoSong)/sum(playerAudioVector);
+    playerAudioVector = amplitudeMultiple * playerAudioVector;
     
     
-    comparisonSum = sqrt(mean(shiftedMonoSong-monoPlayer));
+    comparisonSum = sqrt(sqrt(sqrt(sqrt(abs(mean(shiftedMonoSong-playerAudioVector))))));
+    if shiftedSongWindowLeft > 10
+        disp([shiftedMonoSong, playerAudioVector])
+    end
 
-
-    
-
-    disp(timeDiff)
     songWindowLeft = songWindowLeft + windowShift;
     playerWindowLeft = playerWindowLeft + windowShift;
     if (songWindowLeft+songWindowWidth)*songSampleRate > audioInfo.TotalSamples
         break
     end
+    playerAudioVector = vertcat(playerAudioVector(4411:44100), zeros(4410, 1));
+    posInPlayerAudioVector = 39691; 
 end
-
-%{
-
-sampleRate = 48000;
-channels = 2;
-chunkSize = 1024; % Adjust based on the data rate from the bot
-bitsPerSample = 16;
-
-% Create a UDP object
-udpReceiver = udpport("LocalPort", 12345);
-while true
-    disp(udpReceiver.NumBytesAvailable);
-    receivedData = read(udpReceiver, 1024, "uint16");
-    if ~isempty(receivedData)
-        disp(['Received message: ', char(receivedData)]);
-        break
-    end
-end
-
-% Create an audio player
-audioPlayer = audioplayer(zeros(chunkSize, channels), sampleRate);
-
-% Receive and play audio in a loop
-disp('Receiving audio...');
-while true
-    % Read data from the UDP socket
-    audioData = read(udpReceiver, chunkSize * channels, 'int16');
-    
-    if ~isempty(audioData)
-        % Reshape the data to match the audio channels
-        audioData = reshape(audioData, chunkSize, channels);
-        
-        % Convert the data to double for audioplayer
-        audioData = double(audioData) / (2^(bitsPerSample-1));
-        
-        % Play the audio
-        xcorr(, audioData)
-    end
-end
-%}
-
-function pauses(delay,t0)
-
-persistent sys_delay;
-
-if nargin<2
-   t0=tic;
-end
-
-if isempty(sys_delay)
-   %%
-   sys_delay = 0;
-   % Use this function itself to calibrate system delays on its first call   
-   N=66; delay=0.002+0.002*rand(1,N); % use approx. 0.2 sec on first call
-   %N=333; delay=0.002+0.002*rand(1,N); % use approx. 1 sec on first call
-   dt=zeros(1,N);
-   pauses(0); % JIT initialization
-   for k=1:N
-      t1=tic; pauses(delay(k),t1); dt(k)=toc(t1);
-   end
-   dt = (dt-delay);   
-   sys_delay = mean(dt);
-end
-
-if 0 % enable to use pause() instead of java.lang.Thread.sleep()
-   sys_step = 0.015; % ~ 3 sigma accuracy of pause()
-   if delay - toc(t0) > 3*sys_step
-      pause(delay - toc(t0) - 2*sys_step); % this will realy stop Matlab
-   end
-else
-   sys_step = 0.002; % ~ 6 sigma accuracy of java.lang.Thread.sleep()
-   if delay - toc(t0) > 3*sys_step
-      java.lang.Thread.sleep((delay - toc(t0) - 2*sys_step)*1000); % this will realy stop Matlab
-   end
-end
-while delay - toc(t0) > sys_delay
-   % Do nothing...
-end
-return
-end
-%}
